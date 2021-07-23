@@ -5,15 +5,19 @@ import time
 from random import randrange
 from PIL import Image
 from typing import NamedTuple
-array = np.random.randint(1,2, size=(30, 30))
+sizemap = 100
+scale = 10
+color = False
+
+array = np.random.randint(1,2, size=(sizemap, sizemap))
 
 class Move(NamedTuple):
     Y: int
     X: int
     
 
-startx = randrange(30)
-starty = randrange(30)
+startx = randrange(sizemap)
+starty = randrange(sizemap)
 
 
 endx = 0
@@ -21,13 +25,13 @@ endy = 0
 pos = Move(starty, startx)
 
 MoveArray = [Move(-1,0),
-             Move(-1,1),
-             Move(0,1),
-             Move(1,1),
-             Move(1,0),
-             Move(1,-1),
-             Move(0,-1),
-             Move(-1,-1)]
+            Move(-1,1),
+            Move(0,1),
+            Move(1,1),
+            Move(1,0),
+            Move(1,-1),
+            Move(0,-1),
+            Move(-1,-1)]
 
 array[starty,startx] = 0
 
@@ -35,54 +39,32 @@ array[starty,startx] = 0
 
 
 i = 0
-while(i < 200):
-    move = randrange(7)
-    if (pos.Y + MoveArray[move].Y >= 0 and pos.Y + MoveArray[move].Y  < 30 ):
-            if (pos.X + MoveArray[move].X >= 0 and pos.X + MoveArray[move].X < 30 ):
-        
-                if (array[pos.Y + MoveArray[move].Y, pos.X + MoveArray[move].X] == 1):
-                    num = 0
-                    for y in range(7):
-                        if (pos.Y + MoveArray[move].Y + MoveArray[y].Y >= 0 and pos.Y + MoveArray[move].Y + MoveArray[y].Y  < 30 ):
-                            if (pos.X + MoveArray[move].X + MoveArray[y].X >= 0 and pos.X + MoveArray[move].X + MoveArray[y].X  < 30 ):
-                                if (array[(pos.Y + MoveArray[move].Y + MoveArray[y].Y), (pos.X + MoveArray[move].X + MoveArray[y].X)] == 0):
-                                    num = num + 1
-                    if(num <= 1):        
-                        array[pos.Y + MoveArray[move].Y, pos.X + MoveArray[move].X] = 0
-                        pos = Move((pos.Y + MoveArray[move].Y), (pos.X + MoveArray[move].X))
-        
-    
-    if(i == 199):
-        array[pos.Y, pos.X] = 0
-        endx = pos.X
-        endy = pos.Y
 
-    i = i+1
 
-w, h = 600, 600
+w, h = sizemap*scale, sizemap*scale
 data = np.zeros((h, w, 3), dtype=np.uint8)
-for y in range(30):
-    for x in range(30):
+for y in range(sizemap):
+    for x in range(sizemap):
         if (array[y,x] == 1):
-            rand = randrange(2)
-            if(rand == 1):
+            rand = randrange(3)
+            if(rand == 1 or rand == 2):
                 array[y,x] = 0
                 
 
-for y in range(30):
-    for x in range(30):
+for y in range(sizemap):
+    for x in range(sizemap):
         if (y == starty and x == startx):
-            for a in range(20):
-                   for b in range(20):
-                       data[y*20 +b,x*20 +a] = [0,255,0]
+            for a in range(scale):
+                for b in range(scale):
+                    data[y*scale +b,x*scale +a] = [0,255,0]
         elif (y == endy and x == endx):
-            for a in range(20):
-                   for b in range(20):
-                       data[y*20 +b,x*20 +a] = [255,0,0]
+            for a in range(scale):
+                for b in range(scale):
+                    data[y*scale +b,x*scale +a] = [255,0,0]
         elif (array[y,x] == 0):
-               for a in range(20):
-                   for b in range(20):
-                       data[y*20 +b,x*20 +a] = [255,255,255]
+            for a in range(scale):
+                for b in range(scale):
+                    data[y*scale +b,x*scale +a] = [255,255,255]
                 
 
                 
@@ -91,7 +73,12 @@ img.save('my.png')
 print(startx)
 print(starty)
 turtle.penup()
-turtle.goto((startx - 15) * 20 +10, (-1*starty+15) * 20 -10)
+
+t = turtle.Turtle()
+t.penup()
+
+turtle.goto((startx - sizemap/2) * scale +10, (-1*starty+sizemap/2) * scale -10)
+t.goto((startx - sizemap/2) * scale +10, (-1*starty+sizemap/2) * scale -10)
 turtle.showturtle()
 turtle.shape("turtle")
 # load the appropriate image
@@ -101,6 +88,11 @@ turtle.penup()
 turtle.colormode(255)
 turtle.pencolor((0,0,255))
 turtle.pendown()
+
+
+
+t.pendown()
+t.pencolor((0,255,0))
 
 
 
@@ -132,9 +124,9 @@ def astar(maze, start, end):
     end_node.g = end_node.h = end_node.f = 0
 
     # Initialize both the open and closed list arrays
-      ### ENTER your open_list code here
+    ### ENTER your open_list code here
     open_list = []
-	  ### ENTER your closed_list code here
+    ### ENTER your closed_list code here
     closed_list = []
     
 
@@ -169,30 +161,37 @@ def astar(maze, start, end):
         # Generate children
         children = []
         for new_position in [(-1,0),
-             (-1,1),
-             (0,1),
-             (1,1),
-             (1,0),
-             (1,-1),
-             (0,-1),
-             (-1,-1)]: 
+            (-1,1),
+            (0,1),
+            (1,1),
+            (1,0),
+            (1,-1),
+            (0,-1),
+            (-1,-1)]: 
 
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
             
-           
             
+        
+
             
                     
             # Make sure within range
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
+            if(color == True):
+                if maze[node_position[0]][node_position[1]] == 0:
+                    t.pencolor((0,255,0))
+                elif maze[node_position[0]][node_position[1]] == 1:
+                    t.pencolor((255,0,0))
+                t.goto((node_position[1] - sizemap/2) * scale +10, (-1*node_position[0]+sizemap/2) * scale -10)
 
             # Make sure walkable terrain
             if maze[node_position[0]][node_position[1]] != 0:
                 
                 continue
-                 
+                
 
             # Create new node
             new_node = Node(current_node, node_position)
@@ -203,7 +202,7 @@ def astar(maze, start, end):
             
         # Loop through children
         for child in children:
-
+            print(child.position)
             # Child is on the closed list
             for closed_child in closed_list:
                 if child == closed_child:
@@ -213,6 +212,7 @@ def astar(maze, start, end):
             # Create the f, g, and h values
             child.g = current_node.g + 1
             child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            print(child.h)
             child.f = child.g + child.h
             
             
@@ -230,7 +230,7 @@ def astar(maze, start, end):
 
 
 def main():
-          
+        
     maze = array
 
     start = (starty,startx) 
@@ -239,7 +239,7 @@ def main():
     path = astar(maze, start, end)
     print(path)
     for f in path:
-        turtle.goto((f[1] - 15) * 20 +10, (-1*f[0]+15) * 20 -10)
+        turtle.goto((f[1] - sizemap/2) * scale +10, (-1*f[0]+sizemap/2) * scale -10)
 
 
 if __name__ == '__main__':
