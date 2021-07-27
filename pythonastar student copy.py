@@ -2,12 +2,13 @@ from os import system, name
 import numpy as np
 import turtle
 import time
+import math
 from random import randrange
 from PIL import Image
 from typing import NamedTuple
-sizemap = 100
-scale = 10
-color = False
+sizemap = 10
+scale = 50
+color = True
 
 array = np.random.randint(1,2, size=(sizemap, sizemap))
 
@@ -16,8 +17,8 @@ class Move(NamedTuple):
     X: int
     
 
-startx = randrange(sizemap)
-starty = randrange(sizemap)
+startx = sizemap-1
+starty = sizemap-1
 
 
 endx = 0
@@ -34,6 +35,7 @@ MoveArray = [Move(-1,0),
             Move(-1,-1)]
 
 array[starty,startx] = 0
+array[endx,endy] = 0
 
 
 
@@ -46,8 +48,8 @@ data = np.zeros((h, w, 3), dtype=np.uint8)
 for y in range(sizemap):
     for x in range(sizemap):
         if (array[y,x] == 1):
-            rand = randrange(3)
-            if(rand == 1 or rand == 2):
+            rand = randrange(5)
+            if(rand == 1 or rand == 2 or rand == 3 or rand == 4 or rand == 5):
                 array[y,x] = 0
                 
 
@@ -77,8 +79,8 @@ turtle.penup()
 t = turtle.Turtle()
 t.penup()
 
-turtle.goto((startx - sizemap/2) * scale +10, (-1*starty+sizemap/2) * scale -10)
-t.goto((startx - sizemap/2) * scale +10, (-1*starty+sizemap/2) * scale -10)
+turtle.goto((startx - sizemap/2) * scale +scale / 2, (-1*starty+sizemap/2) * scale -scale / 2)
+t.goto((startx - sizemap/2) * scale +scale / 2, (-1*starty+sizemap/2) * scale -scale / 2)
 turtle.showturtle()
 turtle.shape("turtle")
 # load the appropriate image
@@ -97,7 +99,8 @@ t.pencolor((0,255,0))
 
 
 
-
+outer_iterations = 0
+max_iterations = (len(array) // 2) ** 10
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -135,7 +138,6 @@ def astar(maze, start, end):
 
     # Loop until you find the end
     while len(open_list) > 0:
-
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -144,6 +146,10 @@ def astar(maze, start, end):
                 current_node = item
                 current_index = index
 
+
+        if outer_iterations > max_iterations:
+            print ("giving up on pathfinding too many iterations")
+            return astar(current_node,maze)
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
         closed_list.append(current_node)
@@ -185,7 +191,7 @@ def astar(maze, start, end):
                     t.pencolor((0,255,0))
                 elif maze[node_position[0]][node_position[1]] == 1:
                     t.pencolor((255,0,0))
-                t.goto((node_position[1] - sizemap/2) * scale +10, (-1*node_position[0]+sizemap/2) * scale -10)
+                t.goto((node_position[1] - sizemap/2) * scale + scale / 2, (-1*node_position[0]+sizemap/2) * scale - scale / 2)
 
             # Make sure walkable terrain
             if maze[node_position[0]][node_position[1]] != 0:
@@ -203,6 +209,7 @@ def astar(maze, start, end):
         # Loop through children
         for child in children:
             print(child.position)
+            # t.goto((child.position[1] - sizemap/2) * scale + scale / 2, (-1*child.position[0]+sizemap/2) * scale - scale / 2)
             # Child is on the closed list
             for closed_child in closed_list:
                 if child == closed_child:
@@ -239,7 +246,8 @@ def main():
     path = astar(maze, start, end)
     print(path)
     for f in path:
-        turtle.goto((f[1] - sizemap/2) * scale +10, (-1*f[0]+sizemap/2) * scale -10)
+        turtle.goto((f[1] - sizemap/2) * scale +scale / 2, (-1*f[0]+sizemap/2) * scale -scale / 2)
+    hello = input("")
 
 
 if __name__ == '__main__':
