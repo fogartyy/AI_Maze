@@ -15,35 +15,45 @@ from perlin_numpy import (
 from random import randrange
 from PIL import Image, ImageOps
 from typing import NamedTuple
-sizemap = 1024
+sizemap = 4096
 val = sizemap/2
-scale = 4
-color = False
-np.random.seed()
+scale = 1
+color = True
+number = randrange(100)
+np.random.seed(number+1)
 noise = generate_fractal_noise_2d((sizemap, sizemap),(int(val), int(val)))
-np.random.seed()
+np.random.seed(number+2)
 anoise = generate_perlin_noise_2d((sizemap,sizemap),(int(val),int(val)))
-np.random.seed()
+np.random.seed(number+3)
 bnoise = generate_perlin_noise_2d((sizemap,sizemap),(int(val),int(val)))
 
-np.random.seed()
-mask = generate_perlin_noise_2d((sizemap,sizemap),(int(val/2),int(val/2)))
+np.random.seed(number+4)
+mask = generate_perlin_noise_2d((sizemap,sizemap),(int(val),int(val),5))
+np.random.seed(number+5)
+maska = generate_perlin_noise_2d((sizemap,sizemap),(int(val/4),int(val/4),5))
+np.random.seed(number+6)
+maskb = generate_perlin_noise_2d((sizemap,sizemap),(int(val/16),int(val/16),5))
 
 for a in range(sizemap):
     for b in range(sizemap):
-        if(mask[a,b] < 0):
-            diss = math.sqrt(pow(a-b, 2) +pow(sizemap/2 - sizemap/2, 2))
-            noise[a,b] = noise[a,b] - anoise[a,b] + bnoise[a,b] 
+        diss = math.sqrt(pow(a-(sizemap/2), 2) + pow((sizemap/2) -b , 2))
+        if(mask[a,b] > 0.2):
+            
+           
+            noise[a,b] = ((noise[a,b] + anoise[a,b] + bnoise[a,b] - (mask[a,b] /(diss/15)*40) ) +  maska[a,b] /(diss/10)-1 )
         else:
-            noise[a,b] = noise[a,b] - anoise[a,b] - bnoise[a,b]
+            noise[a,b] = noise[a,b] - anoise[a,b] - bnoise[a,b] + (mask[a,b] /(1.2))
 
 
 print(noise)
 for x in range(sizemap):
     for y in range(sizemap):
-        if noise[x,y] >= -0.3:
+        diss = math.sqrt(pow(x-(sizemap/2), 2) + pow((sizemap/2) -y , 2))
+        if  diss > sizemap/1.45:
             noise[x,y] = 0
-        else:
+        elif noise[x,y] >= -0.3:
+            noise[x,y] = 0
+        elif noise[x,y] < -0.3:
             noise[x,y] = 1
 print(noise)
 
@@ -54,12 +64,12 @@ class Move(NamedTuple):
     X: int
     
 
-startx = sizemap-1
-starty = sizemap-1
+endx = sizemap-1
+endy = sizemap-1
 
 
-endx = 0
-endy = 0
+startx = 0
+starty = 0
 pos = Move(starty, startx)
 
 MoveArray = [Move(-1,0),
@@ -84,7 +94,7 @@ w, h = sizemap*scale, sizemap*scale
 data = np.zeros((h, w, 3), dtype=np.uint8)
 for y in range(sizemap):
     for x in range(sizemap):
-                array[y,x] = noise[x,y]
+                array[y,x] = int(noise[x,y])
                 
 
 for y in range(sizemap):
@@ -176,27 +186,29 @@ def color():
 def return_path(current_node,vis,data):
     print(len(vis))
     num = 0
-    for l in vis:
-        datas = data
-        c = color()
-        imgs = []
 
-        while l is not None:
-            g = l.position[0]
-            m = l.position[1]
-            for a in range(scale):
-                for b in range(scale):
-                    datas[g*scale +b,m*scale +a] = [c[0],c[1],c[2]]
-                    
-                    
-            l = l.parent
-            
-        datas = datas[::-1]
-        num += 1
-        i = Image.fromarray(datas, 'RGB')
-        i = ImageOps.flip(i)
-        imgs.append(i)
-        img.save('out.gif', save_all=True, append_images=imgs)
+    l = current_node
+    datas = data
+    
+    imgs = []
+    c = color()
+    while l is not None:
+       
+        g = l.position[0]
+        m = l.position[1]
+        for a in range(scale):
+            for b in range(scale):
+                datas[g*scale +b,m*scale +a] = [255,0,0]
+                
+                
+        l = l.parent
+        
+    datas = datas[::-1]
+    num += 1
+    i = Image.fromarray(datas, 'RGB')
+    i = ImageOps.flip(i)
+    imgs.append(i)
+    img.save('out.png',i)
 
     path = []
     
